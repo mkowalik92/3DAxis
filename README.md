@@ -1,2 +1,3 @@
 # RenderToy
-Shader visualizer for shadertoy or thebookofshaders.
+## Shader visualizer for shadertoy.com or thebookofshaders.com
+
