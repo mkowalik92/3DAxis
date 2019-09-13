@@ -1,21 +1,29 @@
 #version 330 core
 
-uniform float time;
-in vec4 gl_FragCoord;
-out vec4 FragColor;
+// https://www.shadertoy.com/view/4dc3D8
 
-float plot(vec2 st, float pct)
-{
-  return smoothstep(pct - 0.02f, pct, st.y) - smoothstep(pct, pct + 0.02f, st.y);
-}
+#define SCALE 20.
+#define SPEED 9.
+#define FREQUENCY .3
+
+float d;
+#define C(p)  min(1., sqrt(10.*abs(length(p-.5)-.4)))
+#define D(p,o)  ( (d=length(p-o)*5.)<=.6 ? d:1. )
+
+uniform float time;
+uniform float deltaTime;
+in vec4 gl_FragCoord;
+out vec4 O;
 
 void main()
 {
-  vec2 resolution = vec2(800.0f, 600.0f);
-  vec2 st = gl_FragCoord.xy/resolution;
-  float y = smoothstep(0.1f, 0.9f, st.x);
-  vec3 color = vec3(y);
-  float pct = plot(st, y);
-  color = (1.0f - pct) * color + pct * vec3(0.0f, 1.0f, 0.0f);
-  FragColor = vec4(color, 1.0f);
+  vec2 U = gl_FragCoord.xy;
+  vec2 R = vec2(800.0f, 600.0f),
+           p = SCALE*(U.xy+U.xy/R)/R.y,
+           f = fract(p);
+  p=floor(p);
+  float t=(p.x+p.y)*FREQUENCY
+         +time*SPEED;
+  vec2 o=vec2(cos(t),sin(t))*.4+.5;
+  O.xyz = vec3(C(f)*D(f,o));
 }
