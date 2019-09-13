@@ -15,8 +15,10 @@ int shaderProgram;
 unsigned int VBO, VAO, EBO;
 
 int timeUniformLocation;
-float timeValueStart;
-float timeValueEnd;
+int deltaTimeUniformLocation;
+float timeValueStart = 0.0f;
+float timeValueDelta = 0.0f;
+float timeValueCurrent = 0.0f;
 
 char* vsFileName = "./shaders/basic_vs.glsl\0";
 char* fsFileName = "./shaders/basic_fs.glsl\0";
@@ -53,6 +55,7 @@ void init(const unsigned int width, const unsigned int height, const char* const
   printf("GLAD initialized!\n");
   shaderProgram = shader(vsFileName, fsFileName);
   timeUniformLocation = glGetUniformLocation(shaderProgram, "time");
+  deltaTimeUniformLocation = glGetUniformLocation(shaderProgram, "deltaTime");
   timeValueStart = glfwGetTime();
   rectangle();
   //triangle();
@@ -82,11 +85,20 @@ void render()
 {
   glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
   glClear(GL_COLOR_BUFFER_BIT);
-  timeValueEnd = timeValueStart - glfwGetTime();
-
-  glUniform1f(timeUniformLocation, timeValueEnd);
+  printf("timeValueStart: %f\n", timeValueStart);
+  timeValueCurrent = glfwGetTime();
+  timeValueDelta = timeValueCurrent - timeValueStart;
+  timeValueStart = timeValueCurrent;
+  printf("timeValueDelta: %f\n", timeValueDelta);
+  printf("timeValueCurrent: %f\n", timeValueCurrent);
+  //timeValueEnd = timeValueStart - timeValueCurrent;
+  //printf("timeValueStart: %d\ntimeValueCurrent: %d\n", timeValueStart, timeValueCurrent);
 
   glUseProgram(shaderProgram);
+
+  glUniform1f(timeUniformLocation, timeValueCurrent);
+  glUniform1f(deltaTimeUniformLocation, timeValueDelta);
+
   glBindVertexArray(VAO);
   glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
   //glDrawArrays(GL_TRIANGLES, 0, 3);
