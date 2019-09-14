@@ -1,6 +1,7 @@
 #version 330 core
 
 // https://www.shadertoy.com/view/4dc3D8
+// update this guys work and make it more readable. explain the math
 
 #define SCALE 20.
 #define SPEED 9.
