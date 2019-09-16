@@ -14,8 +14,12 @@ GLFWwindow* window; // main window
 int shaderProgram;
 unsigned int VBO, VAO, EBO;
 
+int fpsCounter = 0;
+int lastFullSecondTime = 0;
+
 int timeUniformLocation;
 int deltaTimeUniformLocation;
+int resolutionUniformLocation;
 float timeValueStart = 0.0f;
 float timeValueDelta = 0.0f;
 float timeValueCurrent = 0.0f;
@@ -54,8 +58,12 @@ void init(const unsigned int width, const unsigned int height, const char* const
   }
   printf("GLAD initialized!\n");
   shaderProgram = shader(vsFileName, fsFileName);
-  timeUniformLocation = glGetUniformLocation(shaderProgram, "time");
-  deltaTimeUniformLocation = glGetUniformLocation(shaderProgram, "deltaTime");
+  timeUniformLocation = glGetUniformLocation(shaderProgram, "iTime");
+  deltaTimeUniformLocation = glGetUniformLocation(shaderProgram, "iTimeDelta");
+  resolutionUniformLocation = glGetUniformLocation(shaderProgram, "iResolution");
+  glUseProgram(shaderProgram);
+  glUniform2f(resolutionUniformLocation, (float)width, (float)height);
+
   timeValueStart = glfwGetTime();
   rectangle();
   //triangle();
@@ -77,24 +85,36 @@ void processInput()
   if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
   {
     printf("Shader refreshed!\n");
+    glDeleteProgram(shaderProgram);
     shaderProgram = shader(vsFileName, fsFileName);
+    timeUniformLocation = glGetUniformLocation(shaderProgram, "iTime");
+    deltaTimeUniformLocation = glGetUniformLocation(shaderProgram, "iTimeDelta");
+    resolutionUniformLocation = glGetUniformLocation(shaderProgram, "iResolution");
+    glUseProgram(shaderProgram);
+    int width;
+    int height;
+    glfwGetWindowSize(window, &width, &height);
+    glUniform2f(resolutionUniformLocation, (float)width, (float)height);
+    timeValueStart = glfwGetTime();
   }
 }
 
 void render()
 {
+  fpsCounter = fpsCounter + 1;
   glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
   glClear(GL_COLOR_BUFFER_BIT);
-  printf("timeValueStart: %f\n", timeValueStart);
   timeValueCurrent = glfwGetTime();
   timeValueDelta = timeValueCurrent - timeValueStart;
+  if((int)timeValueCurrent > lastFullSecondTime)
+  {
+    //printf("timeValueStart: %f\n", timeValueStart);
+    lastFullSecondTime = (int)timeValueCurrent;
+    //printf("###### FPS %i ######\n", fpsCounter);
+    //printf("timeValueCurrent: %f\n", timeValueCurrent);
+    fpsCounter = 0;
+  }
   timeValueStart = timeValueCurrent;
-  printf("timeValueDelta: %f\n", timeValueDelta);
-  printf("timeValueCurrent: %f\n", timeValueCurrent);
-  //timeValueEnd = timeValueStart - timeValueCurrent;
-  //printf("timeValueStart: %d\ntimeValueCurrent: %d\n", timeValueStart, timeValueCurrent);
-
-  glUseProgram(shaderProgram);
 
   glUniform1f(timeUniformLocation, timeValueCurrent);
   glUniform1f(deltaTimeUniformLocation, timeValueDelta);
@@ -111,6 +131,7 @@ void render()
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
+  glUniform2f(resolutionUniformLocation, (float)width, (float)height);
   glViewport(0, 0, width, height);
 }
 
